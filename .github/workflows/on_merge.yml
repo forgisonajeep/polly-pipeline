@@ -1,0 +1,31 @@
+name: Merge → prod.mp3
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-prod:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install boto3
+
+      - name: Run Polly synth → prod
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION:            ${{ secrets.AWS_REGION }}
+          S3_BUCKET:             ${{ secrets.S3_BUCKET }}
+          S3_KEY: polly-audio/prod.mp3
+          TEXT_FILE: speech.txt
+          VOICE_ID: Joanna
+        run: python synthesize.py
